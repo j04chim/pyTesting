@@ -57,6 +57,4 @@ GrandParent.willThrowAnError()
 GrandParent.Parent.Child.passingTests()
 FailingTests.willFail()
 
-Testing.setDisplayStyle(5)
-
 Testing.display()
