@@ -6,6 +6,8 @@ def pow2(a):
 def squareRoot(a):
     return a ** 0.5
 
+Testing.setDisplayColors(True)
+
 @Testing.reference
 def testWithParameter(a):
     Testing.test( a == 1,
@@ -54,5 +56,7 @@ testWithParameter(1)
 GrandParent.willThrowAnError()
 GrandParent.Parent.Child.passingTests()
 FailingTests.willFail()
+
+Testing.setDisplayStyle(5)
 
 Testing.display()

@@ -21,14 +21,51 @@ class Testing :
     Testing.display() display the results of all the tests.
     """
 
+    # Variables
     _messages = { }
     _current_function_path = [ ]
     _total_tests = 0
     _failed_tests = 0
-    _display_results = True
-    _catch_error = True
 
-    def displayLiveResults( display : bool ) -> None :
+    # Parameters
+    _display_results = True
+    _catch_errors = True
+    _display_starting_char = ''
+    _display_color = True
+    _display_style = 0
+
+    # Constants
+    _colors = [
+            "\033[33m", # Yellow
+            "\033[32m", # Green
+            "\033[31m"  # Red
+    ]
+    _pipes = [
+            [
+                '\u2570',
+                '\u2574',
+                '\u251C',
+                '\u2502'
+            ],
+            [
+                '\u2514'
+            ],
+            [
+                '\u255A',
+                '\u2550',
+                '\u2560',
+                '\u2551'
+            ],
+            [
+                '-',
+                ' ',
+                '-',
+                '|'
+            ]
+    ]
+
+    @staticmethod
+    def setDisplayLiveResults( display : bool ) -> None :
 
         """
         Change to wether or not display result of each tests when Testing.test()
@@ -37,7 +74,7 @@ class Testing :
         Default: True
 
         In :
-            display, bool : True will display the result, False hide them
+            display, bool : True will display the result, False hide them.
 
         Out :
             None
@@ -46,7 +83,8 @@ class Testing :
         Testing._display_results = display
         return None
 
-    def catchErrors( catch : bool ) -> None :
+    @staticmethod
+    def setCatchErrors( catch : bool ) -> None :
 
         """
         Change to wether or not catch errors in referenced testing functions.
@@ -55,15 +93,76 @@ class Testing :
         Default: True
 
         In :
-            catch, bool : True will catch errors, False will not
+            catch, bool : True will catch errors, False will not.
 
         Out :
             None
         """
 
-        Testing._catch_error = catch
+        Testing._catch_errors = catch
         return None
 
+    @staticmethod
+    def setDisplayStartingChar( char : str ) -> None :
+
+        """
+        Define the starting character(s) of the tree-view created when
+        displayed with Testing.display().
+
+        Default: ''
+
+        In :
+            char, str : The new starting character.
+
+        Out :
+            None
+        """
+
+        Testing._display_starting_char = char
+        return None
+
+    @staticmethod
+    def setDisplayColors( display : bool ) -> None :
+
+        """
+        Change to wether or not display ANSI colors.
+
+        Default: True
+
+        In :
+            display, bool : True will display color, False won't.
+
+        Out :
+            None
+        """
+
+        Testing._display_color = display
+        return None
+
+    @staticmethod
+    def setDisplayStyle( display : int ) -> None :
+
+        """
+        Change the style of the tree-view.
+        0 uses round pipes,
+        1 uses square pipes,
+        2 uses hollow pipes and
+        3 uses ASCII.
+
+        Default: True
+
+        In :
+            display, bool : True will display color, False won't.
+
+        Out :
+            None
+        """
+
+        if display < len( Testing._pipes ) :
+            Testing._display_style = display
+        return None
+
+    @staticmethod
     def test( valid : bool, message : str ) -> bool :
 
         """
@@ -74,19 +173,64 @@ class Testing :
             valid, bool : Statement to be tested.
             message, str : Message if the test fail.
         Out :
-            bool : Tested statement
+            bool : Tested statement.
         """
 
-        res = "2m." # Green + '.'
+        res = Testing._colorize( ".", 1 )
         if not valid :
-            res = "1mF" # Red + 'F'
-            Testing._addMessage( Testing._current_function_path, Testing._messages, message )
+            res = Testing._colorize( "F", 2 )
+            Testing._addMessage( Testing._current_function_path,
+                                Testing._messages, message )
             Testing._failed_tests += 1
         Testing._total_tests += 1
         if Testing._display_results :
-            print( f"\033[3{ res }\033[0m", end="" )
+            print( res, end="" )
         return valid
 
+    @staticmethod
+    def _colorize( text: str, color: int ) -> str :
+
+        """
+        Colorize the given text with the given color indice in the
+        _colors list.
+        If _display_color if False or the indice is wrong, it will
+        return the base text.
+
+        In :
+            text, str : Text to colorize.
+            color, int : Color indice in _colors.
+
+        Out :
+            str : Colorized text.
+        """
+
+        if ( not Testing._display_color ) or \
+            color > len( Testing._colors ) or color < 0:
+            return text
+        return Testing._colors[ color ] + text + "\033[0m"
+
+    @staticmethod
+    def _get_pipe( indice : int ) -> chr :
+        """
+        Return the correct pipe given an indice. If the pipe does not
+        exists in the current style, it will return the pipe in the
+        default style. If the indice does not correspond to any pipe,
+        it will return an empty char.
+
+        In:
+            indice, int : Indice of the pipe
+
+        Out:
+            chr: The resulting pipe
+        """
+
+        if indice >= len( Testing._pipes[ 0 ] ) :
+            return ''
+        if indice >= len( Testing._pipes[ Testing._display_style ] ):
+            return Testing._pipes[ 0 ][ indice ]
+        return Testing._pipes[ Testing._display_style ][ indice ]
+
+    @staticmethod
     def _addHierarchy( hierarchy : list, tree : dict ) -> None :
 
         """
@@ -108,6 +252,7 @@ class Testing :
             Testing._addHierarchy( hierarchy[1:], tree[ hierarchy[0] ] )
         return None
 
+    @staticmethod
     def _addMessage( hierarchy : list, tree : dict, message : str ) -> None :
 
         """
@@ -126,10 +271,12 @@ class Testing :
             tree[ hierarchy[0] ].append( message )
         else:
             if not hierarchy[0] in tree.keys() :
-                raise Exception( f"Testing used out of the context of a referenced function! ({ hierarchy })" )
+                raise Exception( "Testing used out of the context of a"
+                                f"referenced function! ({ hierarchy })" )
             Testing._addMessage( hierarchy[1:], tree[hierarchy[0]], message )
         return None
 
+    @staticmethod
     def _displayHierarchy( tree : dict, start : str ) -> str :
 
         """
@@ -140,7 +287,7 @@ class Testing :
             start, str : Characters to add before an entry.
 
         Out :
-            str : The resulting text
+            str : The resulting text.
         """
 
         res = ""
@@ -148,33 +295,34 @@ class Testing :
             last = len( tree ) - 1
             for i in range( 0, last + 1 ) :
                 if ( i == last ):
-                    res += f"\033[33m{ start }\u2570\u2574\033[0m"
+                    res += Testing._colorize( f"{ start }{ Testing._get_pipe( 0 ) }{ Testing._get_pipe( 1 ) }", 0 )
                 else:
-                    res += f"\033[33m{ start }\u251C\u2574\033[0m"
+                    res += Testing._colorize( f"{ start }{ Testing._get_pipe( 2 ) }{ Testing._get_pipe( 1 ) }", 0 )
                 res += tree[i] + '\n'
             return res
         else :
             keys = list( tree.keys() )
             last = len( keys ) - 1
-            start_c = '\u2502'
+            start_c = Testing._get_pipe( 3 )
             for i in range( 0, last + 1 ) :
                 if ( i == last ) :
-                    res += f"\033[33m{ start }\u2570\u2574\033[0m"
+                    res += Testing._colorize( f"{ start }{ Testing._get_pipe( 0 ) }{ Testing._get_pipe( 1 ) }", 0 )
                     start_c = ' '
                 else :
-                    res += f"\033[33m{ start }\u251C\u2574\033[0m"
-                res += f"\033[1m\033[33m{ keys[i] }\033[0m\n"
+                    res += Testing._colorize( f"{ start }{ Testing._get_pipe( 2 ) }{ Testing._get_pipe( 1 ) }", 0 )
+                res += Testing._colorize( f"{ keys[i] }\n", 0 )
                 res += Testing._displayHierarchy( tree[ keys[i] ], f"{ start }{ start_c } " )
             return res
 
+    @staticmethod
     def reference(func : type) -> None :
 
         """
-        Reference a function in the _messages{} disctionnary
+        Reference a function in the _messages dictionnary
         and execute it.
 
         In :
-            func, type : Test function to reference
+            func, type : Test function to reference.
         Out :
             None
         """
@@ -182,14 +330,16 @@ class Testing :
         def wrapper( *args, **kwargs ) :
             Testing._current_function_path = func.__qualname__.split( "." )
             Testing._addHierarchy( Testing._current_function_path, Testing._messages )
-            if not Testing._catch_error:
+            if not Testing._catch_errors:
                 return func( *args, **kwargs )
             try:
                 return func( *args, **kwargs )
             except Exception as e:
-                Testing._addMessage( Testing._current_function_path, Testing._messages, '\033[31m' + e.__str__() + '\033[0m' )
+                Testing._addMessage( Testing._current_function_path, Testing._messages,
+                                    Testing._colorize( e.__str__(), 2 ) )
         return wrapper
 
+    @staticmethod
     def display( ) -> None :
 
         """
@@ -202,9 +352,8 @@ class Testing :
         """
 
         print(
-            f"\n\033[32m\033[1m{ Testing._total_tests - Testing._failed_tests }"
-            f"\033[0m\033[32m tests passed\033[0m, \033[31m\033[1m{ Testing._failed_tests }"
-            f"\033[0m\033[31m tests failed\033[0m\n{ Testing._displayHierarchy( Testing._messages, '' ) }"
+            Testing._colorize( f"\n{ Testing._total_tests - Testing._failed_tests } tests passed, ", 1 ) +
+            Testing._colorize( f"{ Testing._failed_tests }  tests failed\n", 2 ) +
+            Testing._displayHierarchy( Testing._messages, Testing._display_starting_char )
         )
         return None
-

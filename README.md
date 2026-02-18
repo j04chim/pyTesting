@@ -47,8 +47,11 @@ Testing.display()
 
 You can modify some behaviors of pyTesting.
 ```py
-Testing.displayLiveResults(True | False) # Display / Hide the '.'/'F' printed while testing, default is True
-Testing.catchErrors(True | False) # Catch errors in referenced test functions, default is True
+Testing.setDisplayLiveResults(True | False) # Display / Hide the '.'/'F' printed while testing, default is True
+Testing.setCatchErrors(True | False) # Catch errors in referenced test functions, default is True
+Testing.setDisplayStartingChar('>') # Set the starting character of the tree-view
+Testing.setDisplayColors(True | False) # Display or not colors
+Testing.setDisplayStyle(0 | 1 | 2 | 3) # Style of the pipes to use
 ```
 
 See `example_tests.py` for a "full" example of `pyTesting` usage.
